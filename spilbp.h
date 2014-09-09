@@ -20,6 +20,7 @@
 #define __SPILBP_H
 
 #include "types.h"
+#include <stdbool.h>
 #include "common.h"
 
 #define SPILBP_SENDRECV_DEBUG       0
@@ -40,9 +41,12 @@ typedef struct {
 void spilbp_print_info();
 void spilbp_init(board_access_t *access);
 void spilbp_release();
-int spilbp_write(u32 addr, void *buffer, int size);
-int spilbp_read(u32 addr, void *buffer, int size);
+int spilbp_write(u32 addr, void *buffer, int size, bool increment);
+int spilbp_read(u32 addr, void *buffer, int size, bool increment);
 
+u32 spilbp_read_command(u16 addr, unsigned nelem, bool increment);
+u32 spilbp_write_command(u16 addr, unsigned nelem, bool increment);
+int spilbp_transact(void *buffer, size_t size);
 #endif
 
 

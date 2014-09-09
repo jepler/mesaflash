@@ -22,12 +22,54 @@
 #include <string.h>
 
 #include "eeprom_local.h"
+#include "eeprom.h"
 #include "spi_boards.h"
 #include "common.h"
 #include "spilbp.h"
 
 extern board_t boards[MAX_BOARDS];
 extern int boards_count;
+
+#if (PAGE_SIZE * 16) > 4096
+#error This code does not work with EEPROM pages that big
+#endif
+
+static void spi_read_page(llio_t *self, u32 addr, void *buff) {
+    int i, j;
+    u32 wide[4*PAGE_SIZE];
+
+    for(i=0, j=0; i<PAGE_SIZE; i++) {
+        wide[j++] = spilbp_write_command(HM2_SPI_DATA_REG, 1, false);
+        wide[j++] = 0;
+        wide[j++] = spilbp_read_command(HM2_SPI_DATA_REG, 1, false);
+        wide[j++] = 0;
+    }
+    eeprom_access.prefix(self);
+    eeprom_access.send_byte(self, SPI_CMD_READ);
+    send_address(self, addr);
+    spilbp_transact(wide, sizeof(wide));
+    eeprom_access.suffix(self);
+
+    for(i=0; i<PAGE_SIZE; i++) ((u8*)buff)[i] = wide[4*i+3];
+}
+
+static void spi_write_page(llio_t *self, u32 addr, void *buff) {
+    int i, j;
+    u32 wide[2*PAGE_SIZE];
+
+    for(i=0, j=0; i<PAGE_SIZE; i++) {
+        wide[j++] = spilbp_write_command(HM2_SPI_DATA_REG, 1, false);
+        wide[j++] = ((u8*)buff)[i];
+    }
+
+    write_enable(self);
+    eeprom_access.prefix(self);
+    eeprom_access.send_byte(self, SPI_CMD_PAGE_WRITE);
+    send_address(self, addr);
+    spilbp_transact(wide, sizeof(wide));
+    eeprom_access.suffix(self);
+    wait_for_write(self);
+}
 
 static int spi_board_open(board_t *board) {
     eeprom_init(&(board->llio));
@@ -38,6 +80,8 @@ static int spi_board_open(board_t *board) {
     } else {
         board->flash_start_address = 0;
     }
+    eeprom_access.read_page = spi_read_page;
+    eeprom_access.write_page = spi_write_page;
     return 0;
 }
 
@@ -54,27 +98,31 @@ void spi_boards_cleanup(board_access_t *access) {
     spilbp_release();
 }
 
-void spi_read(llio_t *self, u32 off, void *buf, int sz) {
-    return spilbp_read(off, buf, sz);
+static
+int spi_read(llio_t *self, u32 off, void *buf, int sz) {
+    spilbp_read(off, buf, sz, true);
+    return 1;
 }
 
-void spi_write(llio_t *self, u32 off, void *buf, int sz) {
-    return spilbp_write(off, buf, sz);
+static
+int spi_write(llio_t *self, u32 off, void *buf, int sz) {
+    spilbp_write(off, buf, sz, true);
+    return 1;
 }
 
 void spi_boards_scan(board_access_t *access) {
     u32 buf[4];
     u32 cookie[] = {0x55aacafe, 0x54534f48, 0x32544f4d};
-    if(spilbp_read(0x100, &buf, sizeof(buf)) < 0) return;
+    if(spilbp_read(0x100, &buf, sizeof(buf), true) < 0) return;
 
     if(memcmp(buf, cookie, sizeof(cookie))) {
         fprintf(stderr, "Unexpected cookie at 0000..000c:\n%08x %08x %08x\n",
             buf[0], buf[1], buf[2]);
-        return 0;
+        return;
     }
 
     char ident[8];
-    if(spilbp_read(buf[3] + 0xc, &ident, sizeof(ident)) < 0) return;
+    if(spilbp_read(buf[3] + 0xc, &ident, sizeof(ident), true) < 0) return;
     
     if(!memcmp(ident, "MESA7I90", 8)) {
         board_t *board = &boards[boards_count];

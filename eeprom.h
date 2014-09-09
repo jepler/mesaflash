@@ -59,4 +59,5 @@ int eeprom_verify(llio_t *self, char *bitfile_name, u32 start_address);
 void eeprom_init(llio_t *self);
 void eeprom_cleanup(llio_t *self);
 
+extern spi_eeprom_dev_t eeprom_access;
 #endif

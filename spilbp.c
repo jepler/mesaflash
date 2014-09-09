@@ -33,21 +33,19 @@
 int sd = -1;
 struct spi_ioc_transfer settings;
 
-static u32 read_command(u16 addr, unsigned nelem) {
-    bool increment = true;
+u32 spilbp_read_command(u16 addr, unsigned nelem, bool increment) {
     return (addr << 16) | 0xA000 | (increment ? 0x800 : 0) | (nelem << 4);
 }
 
-static u32 write_command(u16 addr, unsigned nelem) {
-    bool increment = true;
+u32 spilbp_write_command(u16 addr, unsigned nelem, bool increment) {
     return (addr << 16) | 0xB000 | (increment ? 0x800 : 0) | (nelem << 4);
 }
 
 
-int spilbp_write(u16 addr, void *buffer, int size) {
+int spilbp_write(u16 addr, void *buffer, int size, bool increment) {
     if(size % 4 != 0) return -1;
     u32 txbuf[1+size/4];
-    txbuf[0] = write_command(addr, size/4);
+    txbuf[0] = spilbp_write_command(addr, size/4, increment);
     memcpy(txbuf + 1, buffer, size);
 
     struct spi_ioc_transfer t;
@@ -60,10 +58,10 @@ int spilbp_write(u16 addr, void *buffer, int size) {
     return 0;
 }
 
-int spilbp_read(u16 addr, void *buffer, int size) {
+int spilbp_read(u16 addr, void *buffer, int size, bool increment) {
     if(size % 4 != 0) return -1;
     u32 trxbuf[1+size/4];
-    trxbuf[0] = read_command(addr, size/4);
+    trxbuf[0] = spilbp_read_command(addr, size/4, increment);
     memset(trxbuf+1, 0, size);
 
     struct spi_ioc_transfer t;
@@ -76,6 +74,14 @@ int spilbp_read(u16 addr, void *buffer, int size) {
 
     memcpy(buffer, trxbuf+1, size);
     return 0;
+}
+
+int spilbp_transact(void *buffer, size_t size) {
+    struct spi_ioc_transfer t;
+    t = settings;
+    t.tx_buf = t.rx_buf = (uint64_t)(intptr_t)buffer;
+    t.len = size;
+    return ioctl(sd, SPI_IOC_MESSAGE(1), &t);
 }
 
 void spilbp_print_info() {

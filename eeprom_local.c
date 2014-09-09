@@ -38,7 +38,7 @@ extern spi_eeprom_dev_t eeprom_access;
 
 // spi access via hm2 registers
 
-static void wait_for_data_hm2(llio_t *self) {
+void wait_for_data_hm2(llio_t *self) {
     u32 i = 0;
     u32 data = 0;
 
@@ -309,13 +309,13 @@ static u8 recv_byte_epp(llio_t *self) {
 
 // pci flash
 
-static void send_address(llio_t *self, u32 addr) {
+void send_address(llio_t *self, u32 addr) {
     eeprom_access.send_byte(self, (addr >> 16) & 0xFF);
     eeprom_access.send_byte(self, (addr >> 8) & 0xFF);
     eeprom_access.send_byte(self, addr & 0xFF);
 }
 
-static void write_enable(llio_t *self) {
+void write_enable(llio_t *self) {
     eeprom_access.prefix(self);
     eeprom_access.send_byte(self, SPI_CMD_WRITE_ENABLE);
     eeprom_access.suffix(self);
@@ -342,7 +342,7 @@ u8 read_flash_id(llio_t *self) {
     return ret;
 }
 
-static void wait_for_write(llio_t *self) {
+void wait_for_write(llio_t *self) {
     u8 stat = read_status(self);
 
     while ((stat & WRITE_IN_PROGRESS_MASK) != 0) {
