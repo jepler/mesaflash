@@ -83,7 +83,7 @@ static int spi_board_close(board_t *board) {
 
 int spi_boards_init(board_access_t *access) {
     settings.speed_hz = 8 * 1000 * 1000;
-    settings.bits_per_word = 32;
+    settings.bits_per_word = 8;
 
     sd = open(access->dev_addr, O_RDWR);
     if(sd == -1) {
@@ -92,7 +92,7 @@ int spi_boards_init(board_access_t *access) {
     }
     spidev_set_lsb_first(sd, false);
     spidev_set_mode(sd, 0);
-    spidev_set_bits_per_word(sd, 32);
+    spidev_set_bits_per_word(sd, 8);
     spidev_set_max_speed_hz(sd, settings.speed_hz);
 
     return 0;
@@ -105,7 +105,7 @@ void spi_boards_cleanup(board_access_t *access) {
 int spi_read(llio_t *self, u32 addr, void *buffer, int size) {
     if(size % 4 != 0) return -1;
     u32 trxbuf[1+size/4];
-    trxbuf[0] = read_command(addr, size/4);
+    trxbuf[0] = htobe32(read_command(addr, size));
     memset(trxbuf+1, 0, size);
 
     struct spi_ioc_transfer t;
@@ -116,6 +116,10 @@ int spi_read(llio_t *self, u32 addr, void *buffer, int size) {
     int r = ioctl(sd, SPI_IOC_MESSAGE(1), &t);
     if(r < 0) return r;
 
+usleep(1000);
+    int i;
+    for(i=0; i<size/4; i++)
+            trxbuf[i+1] = be32toh(trxbuf[i+1]);
     memcpy(buffer, trxbuf+1, size);
     return 0;
 }
@@ -132,6 +136,7 @@ int spi_write(llio_t *self, u32 addr, void *buffer, int size) {
     t.len = sizeof(txbuf);
 
     int r = ioctl(sd, SPI_IOC_MESSAGE(1), &t);
+usleep(1000);
     if(r <= 0) return r;
     return 0;
 }
