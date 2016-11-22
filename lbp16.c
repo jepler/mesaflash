@@ -142,5 +142,5 @@ void lbp16_init(int board_type) {
     }
 }
 
-void lbp_cleanup(int board_type) {
+void lbp16_cleanup(int board_type) {
 }

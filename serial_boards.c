@@ -24,7 +24,9 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <poll.h>
 #include <sys/poll.h>
+#include <unistd.h>
 #include "types.h"
 #include "anyio.h"
 #include "serial_boards.h"

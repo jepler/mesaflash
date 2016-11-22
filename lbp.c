@@ -99,7 +99,7 @@ int lbp_write(u16 addr, void *buffer) {
     return 0;
 }
 
-void lbp_print_info() {
+void lbp_print_info(void) {
     u8 data;
 
     data = lbp_read_ctrl(LBP_CMD_READ_VERSION);
@@ -122,7 +122,7 @@ void lbp_init(board_access_t *access) {
 #endif
 }
 
-void lbp_release() {
+void lbp_release(void) {
 #ifdef __linux__
     close(sd);
 #endif

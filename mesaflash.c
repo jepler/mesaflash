@@ -89,7 +89,7 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-void print_short_usage() {
+static void print_short_usage(void) {
     printf("\nMesaflash version 3.3.0~pre (built on %s %s with libpci %s)\n", __DATE__, __TIME__, PCILIB_VERSION);
     printf("Configuration and diagnostic tool for Mesa Electronics PCI(E)/ETH/EPP/USB boards\n");
     printf("(C) 2013-2015 Michael Geszkiewicz (contact: micges@wp.pl)\n");
@@ -97,7 +97,7 @@ void print_short_usage() {
     printf("Try 'mesaflash --help' for more information\n");
 }
 
-void print_usage() {
+static void print_usage(void) {
     printf("Syntax:\n");
     printf("  mesaflash --device device_name [options]\n");
     printf("  mesaflash --device device_name [options] --write filename\n");
@@ -141,7 +141,7 @@ void print_usage() {
     printf("  --help        print this help message\n");
 }
 
-int process_cmd_line(int argc, char *argv[]) {
+static int process_cmd_line(int argc, char *argv[]) {
     int c;
 
     while (1) {

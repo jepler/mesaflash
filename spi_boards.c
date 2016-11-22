@@ -16,6 +16,7 @@
 //    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 //
 
+#include <ctype.h>
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
 #include <stdbool.h>
@@ -28,7 +29,9 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "types.h"
+#include "eeprom.h"
 #include "eeprom_local.h"
 #include "spi_boards.h"
 #include "common.h"
@@ -110,7 +113,7 @@ void spi_boards_cleanup(board_access_t *access) {
     if(sd != -1) close(sd);
 }
 
-void reorderBuffer(char *pBuf, int numInts)
+static void reorderBuffer(char *pBuf, int numInts)
 {
     int lcv;
     for (lcv = 0; lcv < numInts; lcv++)
@@ -125,7 +128,7 @@ void reorderBuffer(char *pBuf, int numInts)
     }
 }
 
-int spi_read(llio_t *self, u32 addr, void *buffer, int size) {
+static int spi_read(llio_t *self, u32 addr, void *buffer, int size) {
     if(size % 4 != 0) return -1;
     int numInts = 1+size/4;
     u32 trxbuf[numInts];
@@ -154,7 +157,7 @@ int spi_read(llio_t *self, u32 addr, void *buffer, int size) {
     return 0;
 }
 
-int spi_write(llio_t *self, u32 addr, void *buffer, int size) {
+static int spi_write(llio_t *self, u32 addr, void *buffer, int size) {
     if(size % 4 != 0) return -1;
     int numInts = 1+size/4;
     u32 txbuf[numInts];

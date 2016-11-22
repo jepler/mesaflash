@@ -20,6 +20,7 @@
 #include <sys/mman.h>
 #include <sys/io.h>
 #include <pci/pci.h>
+#include <sys/time.h>
 #elif _WIN32
 #include <windows.h>
 #include "libpci/pci.h"
@@ -45,6 +46,9 @@ extern int boards_count;
 static int memfd = -1;
 struct pci_access *pacc;
 static u8 file_buffer[SECTOR_SIZE];
+
+static int pci_read(llio_t *self, u32 addr, void *buffer, int size);
+static int pci_write(llio_t *self, u32 addr, void *buffer, int size);
 
 u16 setup_eeprom_5i20[256] = {
 0x9030, // DEVICE ID
@@ -383,7 +387,7 @@ static u16 plx9030_read_eeprom_word(board_t *board, u8 reg) {
     return tdata;
 }
 
-void pci_plx9030_bridge_eeprom_setup_read(board_t *board) {
+static void pci_plx9030_bridge_eeprom_setup_read(board_t *board) {
     int i;
     char *bridge_name = "Unknown";
 
@@ -663,7 +667,7 @@ static int plx905x_reset(llio_t *self) {
     return 0;
 }
 
-void memcpy32(void *vdest, void *vsrc, int size) {
+static void memcpy32(void *vdest, void *vsrc, int size) {
     volatile u32 *dest = (volatile u32*)vdest;
     volatile u32 *src = (volatile u32*)vsrc;
     while(size) {
@@ -674,14 +678,14 @@ void memcpy32(void *vdest, void *vsrc, int size) {
     }
 }
 
-int pci_read(llio_t *self, u32 addr, void *buffer, int size) {
+static int pci_read(llio_t *self, u32 addr, void *buffer, int size) {
     board_t *board = self->board;
     assert(size % 4 == 0);
     memcpy32(buffer, board->base + addr, size/4);
     return 0;
 }
 
-int pci_write(llio_t *self, u32 addr, void *buffer, int size) {
+static int pci_write(llio_t *self, u32 addr, void *buffer, int size) {
     board_t *board = self->board;
     assert(size % 4 == 0);
     memcpy32(board->base + addr, buffer, size/4);

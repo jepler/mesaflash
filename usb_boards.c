@@ -33,7 +33,7 @@ extern board_t boards[MAX_BOARDS];
 extern int boards_count;
 static u8 file_buffer[SECTOR_SIZE];
 
-int usb_read(llio_t *self, u32 addr, void *buffer, int size) {
+static int usb_read(llio_t *self, u32 addr, void *buffer, int size) {
     while (size > 0) {
         lbp_read(addr & 0xFFFF, buffer);
         addr += 4;
@@ -43,7 +43,7 @@ int usb_read(llio_t *self, u32 addr, void *buffer, int size) {
     return 0;
 }
 
-int usb_write(llio_t *self, u32 addr, void *buffer, int size) {
+static int usb_write(llio_t *self, u32 addr, void *buffer, int size) {
     while (size > 0) {
         lbp_write(addr & 0xFFFF, buffer);
         addr += 4;

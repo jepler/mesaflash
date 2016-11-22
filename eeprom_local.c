@@ -258,7 +258,7 @@ static u8 recv_byte_io(llio_t *self) {
 
 // spi access via epp on board 7i43 with EPPIO firmware
 
-void wait_for_data_epp(llio_t *self) {
+static void wait_for_data_epp(llio_t *self) {
     board_t *board = self->board;
     u32 i = 0;
     u8 data = 0;

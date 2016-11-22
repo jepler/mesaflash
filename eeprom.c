@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include "types.h"
+#include "bitfile.h"
 #include "eeprom.h"
 #include "eeprom_local.h"
 #include "eeprom_remote.h"

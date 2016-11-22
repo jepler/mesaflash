@@ -85,9 +85,9 @@ int lbp_recv(void *packet, int size);
 u8 lbp_read_ctrl(u8 cmd);
 int lbp_read(u16 addr, void *buffer);
 int lbp_write(u16 addr, void *buffer);
-void lbp_print_info();
+void lbp_print_info(void);
 void lbp_init(board_access_t *access);
-void lbp_release();
+void lbp_release(void);
 
 #endif
 

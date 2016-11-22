@@ -30,7 +30,7 @@ OPT = -O0
 
 #DEBUG = -g -pedantic -Wall -Wextra
 #DEBUG = -g -Wall -Wextra
-DEBUG = -g
+DEBUG = -g -Werror=missing-prototypes -Werror=strict-prototypes -Werror=implicit-function-declaration
 
 ifeq ($(TARGET),linux)
 	INCLUDE = -I/usr/include

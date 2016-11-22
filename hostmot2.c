@@ -46,7 +46,7 @@ void hm2_read_idrom(hostmot2_t *hm2) {
     }
 }
 
-const char *hm2_hz_to_mhz(u32 freq_hz) {
+static const char *hm2_hz_to_mhz(u32 freq_hz) {
     static char mhz_str[20];
     int r;
     int freq_mhz, freq_mhz_fractional;
@@ -62,7 +62,7 @@ const char *hm2_hz_to_mhz(u32 freq_hz) {
     return mhz_str;
 }
 
-const char *hm2_get_general_function_name(int gtag) {
+static const char *hm2_get_general_function_name(int gtag) {
     switch (gtag) {
         case HM2_GTAG_IRQ_LOGIC:         return "IRQ logic";
         case HM2_GTAG_WATCHDOG:          return "Watchdog";

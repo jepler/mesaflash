@@ -136,7 +136,7 @@ static inline void epp_write32(board_t *board, u32 data) {
     }
 }
 
-int epp_read(llio_t *self, u32 addr, void *buffer, int size) {
+static int epp_read(llio_t *self, u32 addr, void *buffer, int size) {
     int bytes_remaining = size;
     board_t *board = self->board;
 
@@ -162,7 +162,7 @@ int epp_read(llio_t *self, u32 addr, void *buffer, int size) {
     return 1;  // success
 }
 
-int epp_write(llio_t *self, u32 addr, void *buffer, int size) {
+static int epp_write(llio_t *self, u32 addr, void *buffer, int size) {
     int bytes_remaining = size;
     board_t *board = self->board;
 
@@ -188,7 +188,7 @@ int epp_write(llio_t *self, u32 addr, void *buffer, int size) {
     return 1;
 }
 
-int epp_program_fpga(llio_t *self, char *bitfile_name) {
+static int epp_program_fpga(llio_t *self, char *bitfile_name) {
     board_t *board = self->board;
     int bindex, bytesread;
     char part_name[32];
@@ -244,7 +244,7 @@ int epp_program_fpga(llio_t *self, char *bitfile_name) {
 }
 
 // return 0 if the board has been reset, -errno if not
-int epp_reset(llio_t *self) {
+static int epp_reset(llio_t *self) {
     board_t *board = self->board;
     u8 byte;
 

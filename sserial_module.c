@@ -68,40 +68,40 @@ static void disable_sserial_pins(llio_t *llio) {
     }
 }
 
-void sslbp_send_local_cmd(sserial_module_t *ssmod, int interface, u32 cmd) {
+static void sslbp_send_local_cmd(sserial_module_t *ssmod, int interface, u32 cmd) {
     ssmod->board->llio.write(&(ssmod->board->llio), ssmod->base_address + HM2_MOD_OFFS_SSERIAL_CMD + interface*0x40, &(cmd), sizeof(u32));
 }
 
-u32 sslbp_read_local_cmd(sserial_module_t *ssmod, int interface) {
+static u32 sslbp_read_local_cmd(sserial_module_t *ssmod, int interface) {
     u32 data;
 
     ssmod->board->llio.read(&(ssmod->board->llio), ssmod->base_address + HM2_MOD_OFFS_SSERIAL_CMD + interface*0x40, &(data), sizeof(u32));
     return data;
 }
 
-u8 sslbp_read_data(sserial_module_t *ssmod, int interface) {
+static u8 sslbp_read_data(sserial_module_t *ssmod, int interface) {
     u32 data;
 
     ssmod->board->llio.read(&(ssmod->board->llio), ssmod->base_address + HM2_MOD_OFFS_SSERIAL_DATA + interface*0x40, &(data), sizeof(u32));
     return data & 0xFF;
 }
 
-void sslbp_wait_complete(sserial_module_t *ssmod, int interface) {
+static void sslbp_wait_complete(sserial_module_t *ssmod, int interface) {
     while (sslbp_read_local_cmd(ssmod, interface) != 0) {}
 }
 
-void sslbp_send_remote_cmd(sserial_module_t *ssmod, int interface, int channel, u32 cmd) {
+static void sslbp_send_remote_cmd(sserial_module_t *ssmod, int interface, int channel, u32 cmd) {
     ssmod->board->llio.write(&(ssmod->board->llio), ssmod->base_address + HM2_MOD_OFFS_SSERIAL_CS + interface*0x40 + channel*4, &(cmd), sizeof(u32));
 }
 
-u8 sslbp_read_local8(sserial_module_t *ssmod, int interface, u32 addr) {
+static u8 sslbp_read_local8(sserial_module_t *ssmod, int interface, u32 addr) {
 
     sslbp_send_local_cmd(ssmod, interface, SSLBP_CMD_READ(addr));
     sslbp_wait_complete(ssmod, interface);
     return sslbp_read_data(ssmod, interface);
 }
 
-u32 sslbp_read_local32(sserial_module_t *ssmod, int interface, u32 addr) {
+static u32 sslbp_read_local32(sserial_module_t *ssmod, int interface, u32 addr) {
     int byte = 4;
     u32 ret = 0;
 
@@ -110,7 +110,7 @@ u32 sslbp_read_local32(sserial_module_t *ssmod, int interface, u32 addr) {
     return ret;
 }
 
-u8 sslbp_read_remote8(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
+static u8 sslbp_read_remote8(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
     u32 data;
 
     sslbp_send_remote_cmd(ssmod, interface, channel, ((LBP_CMD_READ | LBP_ADDR_AUTO_INC) << 24) | addr);
@@ -120,7 +120,7 @@ u8 sslbp_read_remote8(sserial_module_t *ssmod, int interface, int channel, u32 a
     return data & 0xFF;
 }
 
-u16 sslbp_read_remote16(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
+static u16 sslbp_read_remote16(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
     int byte;
     u16 ret = 0;
 
@@ -129,7 +129,7 @@ u16 sslbp_read_remote16(sserial_module_t *ssmod, int interface, int channel, u32
     return ret;
 }
 
-u32 sslbp_read_remote32(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
+static u32 sslbp_read_remote32(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
     int byte;
     u32 ret = 0;
 
@@ -138,7 +138,7 @@ u32 sslbp_read_remote32(sserial_module_t *ssmod, int interface, int channel, u32
     return ret;
 }
 
-void sslbp_write_remote8(sserial_module_t *ssmod, int interface, int channel, u32 addr, u8 data) {
+static void sslbp_write_remote8(sserial_module_t *ssmod, int interface, int channel, u32 addr, u8 data) {
     u32 d = data;
 
     sslbp_send_remote_cmd(ssmod, interface, channel, ((LBP_CMD_WRITE | LBP_ARGS_8BIT | LBP_ADDR_AUTO_INC) << 24) | addr);
@@ -147,7 +147,7 @@ void sslbp_write_remote8(sserial_module_t *ssmod, int interface, int channel, u3
     sslbp_wait_complete(ssmod, interface);
 }
 
-void sslbp_write_remote16(sserial_module_t *ssmod, int interface, int channel, u32 addr, u16 data) {
+static void sslbp_write_remote16(sserial_module_t *ssmod, int interface, int channel, u32 addr, u16 data) {
     u32 d = data;
 
     sslbp_send_remote_cmd(ssmod, interface, channel, ((LBP_CMD_WRITE | LBP_ARGS_16BIT | LBP_ADDR_AUTO_INC) << 24) | addr);
@@ -156,7 +156,7 @@ void sslbp_write_remote16(sserial_module_t *ssmod, int interface, int channel, u
     sslbp_wait_complete(ssmod, interface);
 }
 
-void sslbp_write_remote32(sserial_module_t *ssmod, int interface, int channel, u32 addr, u32 data) {
+static void sslbp_write_remote32(sserial_module_t *ssmod, int interface, int channel, u32 addr, u32 data) {
     u32 d = data;
 
     sslbp_send_remote_cmd(ssmod, interface, channel, ((LBP_CMD_WRITE | LBP_ARGS_32BIT | LBP_ADDR_AUTO_INC) << 24) | addr);
@@ -165,7 +165,7 @@ void sslbp_write_remote32(sserial_module_t *ssmod, int interface, int channel, u
     sslbp_wait_complete(ssmod, interface);
 }
 
-u16 sslbp_read_nv_remote16(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
+static u16 sslbp_read_nv_remote16(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
     u16 data;
     u32 cmd = LBP_CMD_READ_NV << 24;
 
@@ -185,7 +185,7 @@ u16 sslbp_read_nv_remote16(sserial_module_t *ssmod, int interface, int channel, 
     return data;
 }
 
-u32 sslbp_read_nv_remote32(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
+static u32 sslbp_read_nv_remote32(sserial_module_t *ssmod, int interface, int channel, u32 addr) {
     u32 data;
     u32 cmd = LBP_CMD_READ_NV << 24;
 
@@ -205,7 +205,7 @@ u32 sslbp_read_nv_remote32(sserial_module_t *ssmod, int interface, int channel, 
     return data;
 }
 
-void sslbp_read_remote_bytes(sserial_module_t *ssmod, int interface, int channel, u32 addr, void *buffer, int size) {
+static void sslbp_read_remote_bytes(sserial_module_t *ssmod, int interface, int channel, u32 addr, void *buffer, int size) {
     char *ptr = (char *) buffer;
 
     while (size != 0) {

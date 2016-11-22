@@ -64,7 +64,7 @@ inline int eth_recv_packet(void *buffer, int size) {
     return recvfrom(sd, (char*) buffer, size, 0, (struct sockaddr *) &src_addr, &len);
 }
 
-static void eth_socket_nonblocking() {
+static void eth_socket_nonblocking(void) {
 #ifdef __linux__
     int val = fcntl(sd, F_GETFL);
 
@@ -77,7 +77,7 @@ static void eth_socket_nonblocking() {
 #endif
 }
 
-static void eth_socket_blocking() {
+static void eth_socket_blocking(void) {
 #ifdef __linux__
     int val = fcntl(sd, F_GETFL);
 
@@ -94,7 +94,7 @@ void eth_socket_set_dest_ip(char *addr_name) {
     dst_addr.sin_addr.s_addr = inet_addr(addr_name);
 }
 
-static char *eth_socket_get_src_ip() {
+static char *eth_socket_get_src_ip(void) {
     return inet_ntoa(src_addr.sin_addr);
 }
 
