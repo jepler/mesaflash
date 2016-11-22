@@ -22,7 +22,8 @@
 #include <stdio.h>
 #include "types.h"
 
-int print_bitfile_header(FILE *fp, char *part_name, int verbose_flag);
+int print_bitfile_header(FILE *fp, char *part_name, char *board_id, int verbose_flag);
+int check_board_name(char *llio_board_name, const char *filename, const char *bitfile_board_name);
 u8 bitfile_reverse_bits(u8 data);
 
 #endif

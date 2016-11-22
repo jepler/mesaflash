@@ -155,6 +155,7 @@ int eeprom_write(llio_t *self, char *bitfile_name, u32 start_address, int fix_bo
     int bytesread, i;
     u32 eeprom_addr;
     char part_name[32];
+    char board_name[32];
     struct stat file_stat;
     FILE *fp;
     struct timeval tv1, tv2;
@@ -169,7 +170,7 @@ int eeprom_write(llio_t *self, char *bitfile_name, u32 start_address, int fix_bo
         printf("Can't open file %s: %s\n", bitfile_name, strerror(errno));
         return -1;
     }
-    if (print_bitfile_header(fp, (char*) &part_name, board->llio.verbose) == -1) {
+    if (print_bitfile_header(fp, (char*) &part_name, (char*) &board_name, board->llio.verbose) == -1) {
         fclose(fp);
         return -1;
     }
@@ -180,6 +181,10 @@ int eeprom_write(llio_t *self, char *bitfile_name, u32 start_address, int fix_bo
                 fclose(fp);
                 return -1;
             }
+        }
+        if (!check_board_name(self->board_name, board_name, bitfile_name)) {
+            fclose(fp);
+            return -1;
         }
     }
 // if board doesn't support fallback there is no boot block
@@ -239,6 +244,7 @@ int eeprom_verify(llio_t *self, char *bitfile_name, u32 start_address) {
     int bytesread, i, bindex;
     u32 eeprom_addr;
     char part_name[32];
+    char board_name[32];
     struct stat file_stat;
     FILE *fp;
     struct timeval tv1, tv2;
@@ -253,7 +259,7 @@ int eeprom_verify(llio_t *self, char *bitfile_name, u32 start_address) {
         printf("Can't open file %s: %s\n", bitfile_name, strerror(errno));
         return -1;
     }
-    if (print_bitfile_header(fp, (char*) &part_name, board->llio.verbose) == -1) {
+    if (print_bitfile_header(fp, (char*) &part_name, (char*) &board_name, board->llio.verbose) == -1) {
         fclose(fp);
         return -1;
     }
@@ -263,6 +269,10 @@ int eeprom_verify(llio_t *self, char *bitfile_name, u32 start_address) {
             fclose(fp);
             return -1;
         }
+    }
+    if (!check_board_name(self->board_name, board_name, bitfile_name)) {
+        fclose(fp);
+        return -1;
     }
 // if board doesn't support fallback there is no boot block
     if (board->fallback_support == 1) {

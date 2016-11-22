@@ -334,6 +334,7 @@ void anyio_dev_print_sserial_info(board_t *board) {
 void anyio_bitfile_print_info(char *bitfile_name, int verbose_flag) {
     FILE *fp;
     char part_name[32];
+    char board_name[5];
 
     if (bitfile_name == NULL) {
         return;
@@ -343,6 +344,6 @@ void anyio_bitfile_print_info(char *bitfile_name, int verbose_flag) {
         printf("Can't open file %s: %s\n", bitfile_name, strerror(errno));
         return;
     }
-    print_bitfile_header(fp, (char*) &part_name, verbose_flag);
+    print_bitfile_header(fp, (char*) &part_name, (char*) &board_name, verbose_flag);
     fclose(fp);
 }

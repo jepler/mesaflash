@@ -414,6 +414,7 @@ static int plx9030_program_fpga(llio_t *self, char *bitfile_name) {
     int bindex, bytesread;
     u32 status, control;
     char part_name[32];
+    char board_name[32];
     struct stat file_stat;
     FILE *fp;
     struct timeval tv1, tv2;
@@ -427,10 +428,15 @@ static int plx9030_program_fpga(llio_t *self, char *bitfile_name) {
         printf("Can't open file %s: %s\n", bitfile_name, strerror(errno));
         return -1;
     }
-    if (print_bitfile_header(fp, (char*) &part_name, board->llio.verbose) == -1) {
+    if (print_bitfile_header(fp, (char*) &part_name, (char*) &board_name, board->llio.verbose) == -1) {
         fclose(fp);
         return -1;
     }
+    if (!check_board_name(self->board_name, board_name, bitfile_name)) {
+        fclose(fp);
+        return -1;
+    }
+
     // set /WRITE low for data transfer, and turn on LED
     status = inl(board->ctrl_base_addr + PLX9030_CTRL_STAT_OFFSET);
     control = status & ~PLX9030_WRITE_MASK & ~PLX9030_LED_MASK;
@@ -570,6 +576,7 @@ static int plx905x_program_fpga(llio_t *self, char *bitfile_name) {
     int bindex, bytesread, i;
     u32 status;
     char part_name[32];
+    char board_name[32];
     struct stat file_stat;
     FILE *fp;
     struct timeval tv1, tv2;
@@ -583,7 +590,11 @@ static int plx905x_program_fpga(llio_t *self, char *bitfile_name) {
         printf("Can't open file %s: %s\n", bitfile_name, strerror(errno));
         return -1;
     }
-    if (print_bitfile_header(fp, (char*) &part_name, board->llio.verbose) == -1) {
+    if (print_bitfile_header(fp, (char*) &part_name, (char*) &board_name, board->llio.verbose) == -1) {
+        fclose(fp);
+        return -1;
+    }
+    if (!check_board_name(self->board_name, board_name, bitfile_name)) {
         fclose(fp);
         return -1;
     }

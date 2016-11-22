@@ -22,11 +22,14 @@
 #include "bitfile.h"
 
 // prints info about bitfile and returns header length or -1 when error
-int print_bitfile_header(FILE *fp, char *part_name, int verbose_flag) {
+int print_bitfile_header(FILE *fp, char *part_name, char *board_id, int verbose_flag) {
     u8 buff[256];
     int sleng;
     int bytesread, conflength;
     int ret = 0;
+
+    if(board_id)
+        strcpy(board_id, "");
 
     printf("Checking file... ");
     bytesread = fread(&buff, 1, 14, fp);
@@ -48,6 +51,20 @@ int print_bitfile_header(FILE *fp, char *part_name, int verbose_flag) {
             ret += bytesread;
             if (verbose_flag == 1) {
                 printf("  Design name: %s\n", buff);
+            }
+            char *id = strstr(buff, "UserID=");
+            if(id && board_id) {
+                int id_hex = -1;
+                sscanf(id+7, "%x", &id_hex);
+                if(id_hex != 0xffffffff)
+                {
+                    board_id[0] = (id_hex >> 24) & 0xff;
+                    board_id[1] = (id_hex >> 16) & 0xff;
+                    board_id[2] = (id_hex >>  8) & 0xff;
+                    board_id[3] =  id_hex        & 0xff;
+                    board_id[4] = 0;
+                }
+                fprintf(stderr, "note: board_id = %s\n", board_id);
             }
 
             bytesread = fread(&buff, 1, 3, fp);
@@ -124,4 +141,41 @@ u8 bitfile_reverse_bits(u8 data) {
     0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF, 0x6F, 0xEF, 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF
     };
     return swaptab[data];
+}
+
+static const char *bitfile_basename(const char *filename) {
+    const char *s = strrchr(filename, '/');
+    if(!s) s = filename;
+    else s = s + 1;
+#ifdef _WIN32
+    s = strrchr(filename, '\\');
+    if(!s) s = filename;
+    else s = s + 1;
+#endif
+    return s;
+}
+
+int check_board_name(char *llio_board_name, const char *bitfile_board_name, const char *filename)
+{
+    fprintf(stderr, "check_board_name  %s %s %s\n",
+llio_board_name, filename, bitfile_board_name);
+
+    if(!llio_board_name) {
+        fprintf(stderr, "LLIO: no boardname, cannot check that bitfile matches\n");
+        return 1;
+    }
+    if(bitfile_board_name && *bitfile_board_name) {
+        fprintf(stderr, "NOTE: comparing llio board name '%s' with bitfile board name '%s'\n", llio_board_name, bitfile_board_name);
+        int result = !strncasecmp(llio_board_name, bitfile_board_name, 4);
+        if(!result)
+            fprintf(stderr, "Error: wrong bitfile destination card: Detected %s, bitfile ID is %s\n", llio_board_name, bitfile_board_name);
+        return result;
+    }
+    if(filename) {
+        filename = bitfile_basename(filename);
+        int result = !strncasecmp(llio_board_name, filename, 4);
+        if(!result)
+            fprintf(stderr, "Error: wrong bitfile destination card: Detected %s, filename is %.4s\n", llio_board_name, filename);
+        return result;
+    }
 }

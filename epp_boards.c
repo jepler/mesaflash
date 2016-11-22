@@ -192,6 +192,7 @@ static int epp_program_fpga(llio_t *self, char *bitfile_name) {
     board_t *board = self->board;
     int bindex, bytesread;
     char part_name[32];
+    char board_name[32];
     struct stat file_stat;
     FILE *fp;
 
@@ -204,7 +205,11 @@ static int epp_program_fpga(llio_t *self, char *bitfile_name) {
         printf("Can't open file %s: %s\n", bitfile_name, strerror(errno));
         return -1;
     }
-    if (print_bitfile_header(fp, (char*) &part_name, board->llio.verbose) == -1) {
+    if (print_bitfile_header(fp, (char*) &part_name, (char*) &board_name, board->llio.verbose) == -1) {
+        fclose(fp);
+        return -1;
+    }
+    if (!check_board_name(self->board_name, board_name, bitfile_name)) {
         fclose(fp);
         return -1;
     }

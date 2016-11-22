@@ -35,7 +35,6 @@
 #include "eeprom_local.h"
 #include "spi_boards.h"
 #include "common.h"
-
 extern board_t boards[MAX_BOARDS];
 extern int boards_count;
 
